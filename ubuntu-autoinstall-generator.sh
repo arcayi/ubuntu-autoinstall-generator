@@ -101,6 +101,10 @@ function parse_params() {
                         meta_data_file="${2-}"
                         shift
                         ;;
+                -p | --extra-data-path)
+                        extra_data_path="${2-}"
+                        shift
+                        ;;
                 -?*) die "Unknown option: $1" ;;
                 *) break ;;
                 esac
@@ -212,6 +216,13 @@ xorriso -osirrox on -indev "${source_iso}" -extract / "$tmpdir" &>/dev/null
 chmod -R u+w "$tmpdir"
 rm -rf "$tmpdir/"'[BOOT]'
 log "👍 Extracted to $tmpdir"
+
+# TODO:
+log "🔧 Adding extra files from $extra_data_path ..."
+_target_path=$(awk -F'/' '{print $NF}' <<< $extra_data_path)
+log " ... to target path $tmpdir/$_target_path"
+mkdir -p $tmpdir/$_target_path
+cp -r $extra_data_path/* $tmpdir/$_target_path
 
 if [ ${use_hwe_kernel} -eq 1 ]; then
         if grep -q "hwe-vmlinuz" "$tmpdir/boot/grub/grub.cfg"; then
